@@ -16,6 +16,11 @@ const ui = {
 };
 
 let state = loadState();
+state.watchlist ??= {};
+state.watched ??= {};
+state.ratings ??= {};
+state.theme ??= "dark";
+
 let filter = "all";
 let query = "";
 let currentList = [];
@@ -170,7 +175,7 @@ function renderEmptyState() {
       <div class="content">
         <h2>Busque filmes reais</h2>
         <div class="desc">
-          Digite no campo de busca para carregar filmes do TMDB.
+          Digite no campo de busca para carregar filmes do Local.
           Seus status (quero ver/assistido/nota) ficam salvos no LocalStorage.
         </div>
       </div>
@@ -276,7 +281,7 @@ function loadingHTML() {
     <div class="card">
       <div class="content">
         <h2>Carregando…</h2>
-        <div class="desc">Buscando filmes no TMDB.</div>
+        <div class="desc">Buscando filmes no Local.</div>
       </div>
     </div>
   `;
@@ -289,7 +294,7 @@ function errorHTML(msg) {
         <h2>Não foi possível buscar</h2>
         <div class="desc">
           ${escapeHtml(msg)}<br/><br/>
-          Verifique se você colocou sua TMDB_API_KEY em <b>api.js</b>.
+          <b>api.js</b>.
         </div>
       </div>
     </div>
@@ -362,6 +367,7 @@ function focusStar(movieId, star) {
   const btn = document.querySelector(`.star[data-movie="${movieId}"][data-star="${star}"]`);
   if (btn) btn.focus();
 }
+
 
 
 
