@@ -27,14 +27,35 @@ ui.grid.addEventListener("click", onGridClick);
 ui.grid.addEventListener("keydown", onGridKeyDown);
 
 function wireUI() {
-  // deixa os chips acessíveis e marca o ativo
-  document.querySelectorAll(".chip").forEach((chip) => {
-    chip.setAttribute("role", "button");
-    chip.setAttribute(
-      "aria-pressed",
-      chip.classList.contains("active") ? "true" : "false"
-    );
+  ui.howToBtn.addEventListener("click", () => ui.helpDialog.showModal());
+  ui.closeHelp.addEventListener("click", () => ui.helpDialog.close());
 
+  ui.themeBtn.addEventListener("click", () => {
+    state.theme = state.theme === "dark" ? "light" : "dark";
+    saveState(state);
+    applyTheme(state.theme);
+  });
+
+  // debounce simples
+  let t = null;
+  ui.search.addEventListener("input", (e) => {
+    query = e.target.value.trim();
+    clearTimeout(t);
+
+    t = setTimeout(async () => {
+      if (query.length < 2) {
+        currentList = [];
+        renderEmptyState();
+        return;
+      }
+      await loadFromTMDB(query);
+    }, 350);
+  });
+
+  ui.sort.addEventListener("change", render);
+
+  // filtros
+  document.querySelectorAll(".chip").forEach((chip) => {
     chip.addEventListener("click", () => {
       document.querySelectorAll(".chip").forEach((c) => {
         c.classList.remove("active");
@@ -43,79 +64,16 @@ function wireUI() {
 
       chip.classList.add("active");
       chip.setAttribute("aria-pressed", "true");
-
       filter = chip.dataset.filter;
       render();
     });
   });
-
-  ui.howToBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    ui.helpDialog.showModal();
-  });
-
-  ui.closeHelp.addEventListener("click", () => ui.helpDialog.close());
-
-  ui.themeBtn.addEventListener("click", () => {
-    state.theme = state.theme === "dark" ? "light" : "dark";
-    saveState(state);
-    applyTheme(state.theme);
-  });
-
-  let t = null;
-  ui.search.addEventListener("input", (e) => {
-    query = e.target.value.trim();
-    clearTimeout(t);
-    t = setTimeout(async () => {
-      if (query.length < 2) {
-        currentList = [];
-        renderEmptyState();
-        return;
-      }
-      await loadFromTMDB(query);
-    }, 350);
-  });
-
-  ui.sort.addEventListener("change", () => render());
 }
 
-  
-  ui.closeHelp.addEventListener("click", () => ui.helpDialog.close());
-
-  ui.themeBtn.addEventListener("click", () => {
-    state.theme = state.theme === "dark" ? "light" : "dark";
-    saveState(state);
-    applyTheme(state.theme);
-  });
-
-  let t = null;
-  ui.search.addEventListener("input", (e) => {
-    query = e.target.value.trim();
-    clearTimeout(t);
-    t = setTimeout(async () => {
-      if (query.length < 2) {
-        currentList = [];
-        renderEmptyState();
-        return;
-      }
-      await loadFromTMDB(query);
-    }, 350);
-  });
-
-  ui.sort.addEventListener("change", () => render());
-
-  document.querySelectorAll(".chip").forEach((chip) => {
-    chip.addEventListener("click", () => {
-      document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
-      chip.classList.add("active");
-      filter = chip.dataset.filter;
-      render();
-    });
-  });
-
 function applyTheme(theme) {
-  document.documentElement.dataset.theme = theme;
-  ui.themeBtn.textContent = theme === "dark" ? "🌙 Tema" : "☀️ Tema";
+  const t = theme === "light" ? "light" : "dark";
+  document.documentElement.dataset.theme = t;
+  ui.themeBtn.textContent = t === "dark" ? "🌙 Tema" : "☀️ Tema";
 }
 
 function getMovieStatus(id) {
@@ -149,12 +107,13 @@ function setRating(id, rating) {
 
 async function loadFromTMDB(q) {
   ui.grid.innerHTML = loadingHTML();
+  ui.stats.innerHTML = "";
+
   try {
     currentList = await searchMovies(q);
     render();
   } catch (err) {
     currentList = [];
-    ui.stats.innerHTML = "";
     ui.grid.innerHTML = errorHTML(err?.message || "Erro ao buscar");
   }
 }
@@ -162,7 +121,7 @@ async function loadFromTMDB(q) {
 function filteredMovies() {
   let list = [...currentList];
 
-  list = list.filter(m => {
+  list = list.filter((m) => {
     const s = getMovieStatus(m.id);
     if (filter === "watchlist") return s.inWatchlist;
     if (filter === "watched") return s.watched;
@@ -203,13 +162,14 @@ function renderEmptyState() {
     <div class="stat"><b>${Object.keys(state.watchlist).length}</b><span>Quero ver (salvos)</span></div>
     <div class="stat"><b>${Object.keys(state.watched).length}</b><span>Assistidos (salvos)</span></div>
   `;
+
   ui.grid.innerHTML = `
     <div class="card">
       <div class="content">
         <h2>Busque filmes reais</h2>
         <div class="desc">
-          Digite no campo de busca para carregar filmes do TMDB com pôster e descrição.
-          Seus status (quero ver/assistido/nota) continuam salvos no LocalStorage.
+          Digite no campo de busca para carregar filmes do TMDB.
+          Seus status (quero ver/assistido/nota) ficam salvos no LocalStorage.
         </div>
       </div>
     </div>
@@ -217,26 +177,32 @@ function renderEmptyState() {
 }
 
 function render() {
-  if (!query || query.trim().length < 2) {
+  if (!query || query.length < 2) {
     renderEmptyState();
     return;
   }
 
   renderStats();
 
-  const list = filteredMovies(); // depois você pode: .slice(0, 24)
+  const list = filteredMovies();
   if (list.length === 0) {
-    ui.grid.innerHTML =
-      `<div class="card"><div class="content"><h2>Nada encontrado</h2>` +
-      `<div class="desc">Tente outro termo ou mude o filtro.</div></div></div>`;
+    ui.grid.innerHTML = `
+      <div class="card">
+        <div class="content">
+          <h2>Nada encontrado</h2>
+          <div class="desc">Tente outro termo ou mude o filtro.</div>
+        </div>
+      </div>
+    `;
     return;
   }
 
-  ui.grid.innerHTML = list.map((m) => cardHTML(m)).join("");
+  ui.grid.innerHTML = list.map(cardHTML).join("");
 }
 
 function cardHTML(movie) {
   const s = getMovieStatus(movie.id);
+
   const badges = [
     s.inWatchlist ? `<span class="badge blue">Quero ver</span>` : "",
     s.watched ? `<span class="badge green">Assistido</span>` : "",
@@ -264,47 +230,43 @@ function cardHTML(movie) {
 
       <div class="desc">${escapeHtml(movie.desc)}</div>
 
-      <div class="stars" aria-label="Avaliação por estrelas">
+      <div class="stars" role="radiogroup" aria-label="Avaliar filme de 1 a 5">
         ${starsHTML(movie.id, s.rating)}
       </div>
 
       <div class="actions">
-        <button class="btn secondary" id="wl-${movie.id}">
+        <button class="btn secondary" type="button" id="wl-${movie.id}">
           ${s.inWatchlist ? "✓ Na Watchlist" : "＋ Quero ver"}
         </button>
 
-        <button class="btn secondary" id="watched-${movie.id}">
+        <button class="btn secondary" type="button" id="watched-${movie.id}">
           ${s.watched ? "👁 Assistido" : "👁 Marcar assistido"}
         </button>
 
-        <button class="btn danger" id="clear-${movie.id}">Limpar</button>
+        <button class="btn danger" type="button" id="clear-${movie.id}">Limpar</button>
       </div>
     </div>
   </article>
   `;
 }
 
-function starsHTML(id, rating) {
-  let html = `<div class="stars" role="radiogroup" aria-label="Avaliar filme de 1 a 5">`;
-
+function starsHTML(movieId, rating) {
+  let html = "";
   for (let i = 1; i <= 5; i++) {
     const filled = i <= rating ? "filled" : "";
     const checked = i === rating ? "true" : "false";
-
     html += `
       <button
-        type="button"
         class="star ${filled}"
-        role="radio"
+        type="button"
         aria-checked="${checked}"
-        aria-label="${i} de 5 estrelas"
-        data-movie="${id}"
+        role="radio"
+        data-movie="${movieId}"
         data-star="${i}"
+        title="${i} estrela(s)"
       >★</button>
     `;
   }
-
-  html += `</div>`;
   return html;
 }
 
@@ -324,8 +286,9 @@ function errorHTML(msg) {
     <div class="card">
       <div class="content">
         <h2>Não foi possível buscar</h2>
-        <div class="desc">${escapeHtml(msg)}<br/><br/>
-        Verifique se você colocou sua TMDB_API_KEY em <b>js/api.js</b>.
+        <div class="desc">
+          ${escapeHtml(msg)}<br/><br/>
+          Verifique se você colocou sua TMDB_API_KEY em <b>api.js</b>.
         </div>
       </div>
     </div>
@@ -334,17 +297,16 @@ function errorHTML(msg) {
 
 function escapeHtml(str) {
   return String(str)
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
 function onGridClick(e) {
   const t = e.target;
 
-  // botões principais
   if (t.id?.startsWith("wl-")) {
     const id = Number(t.id.replace("wl-", ""));
     const s = getMovieStatus(id);
@@ -367,12 +329,10 @@ function onGridClick(e) {
     return;
   }
 
-  // estrelas (se você trocou pra botão com data-movie/data-star)
   if (t.classList?.contains("star") && t.dataset.movie) {
     const id = Number(t.dataset.movie);
     const star = Number(t.dataset.star);
     setRating(id, star);
-    return;
   }
 }
 
@@ -398,14 +358,6 @@ function onGridKeyDown(e) {
 }
 
 function focusStar(movieId, star) {
-  const btn = document.querySelector(
-    `.star[data-movie="${movieId}"][data-star="${star}"]`
-  );
+  const btn = document.querySelector(`.star[data-movie="${movieId}"][data-star="${star}"]`);
   if (btn) btn.focus();
 }
-
-
-
-
-
-
