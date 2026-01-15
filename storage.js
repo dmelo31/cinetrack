@@ -1,4 +1,4 @@
-const KEY = "cinetrack_state_v2";
+const KEY = "cinetrack_local_v1";
 
 const defaultState = {
   theme: "dark",
@@ -11,6 +11,7 @@ export function loadState() {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return structuredClone(defaultState);
+
     const data = JSON.parse(raw);
     return {
       ...structuredClone(defaultState),
@@ -18,6 +19,7 @@ export function loadState() {
       watchlist: data.watchlist || {},
       watched: data.watched || {},
       ratings: data.ratings || {},
+      theme: data.theme || "dark",
     };
   } catch {
     return structuredClone(defaultState);
