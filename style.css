@@ -236,9 +236,9 @@ body{
 }
 .star{
   font-size: 18px;
-  cursor:pointer;
-  user-select:none;
-  opacity:.75;
+  cursor: pointer;
+  user-select: none;
+  opacity: .75;
   background: transparent;
   border: 0;
   padding: 2px 2px;
@@ -314,6 +314,7 @@ body{
 .skip-link:focus{
   top: 10px;
 }
+
 
 
 
