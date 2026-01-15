@@ -1,4 +1,4 @@
-const KEY = "cinetrack:v1";
+const KEY = "cinetrack:v2";
 
 export function loadState() {
   try {
