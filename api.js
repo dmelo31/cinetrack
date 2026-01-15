@@ -9,7 +9,7 @@ export function posterUrl(path) {
 }
 
 export async function searchMovies(query) {
-  if (!TMDB_API_KEY || TMDB_API_KEY.includes("25d17526608e4a19ce0749e2c09502fc")) {
+  if (!TMDB_API_KEY || TMDB_API_KEY.includes("SUA_CHAVE_AQUI")) {
     throw new Error("TMDB_API_KEY não configurada em api.js");
   }
 
@@ -30,5 +30,6 @@ export async function searchMovies(query) {
     poster_path: m.poster_path || null,
   }));
 }
+
 
 
