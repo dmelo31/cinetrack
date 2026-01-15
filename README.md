@@ -24,4 +24,5 @@ Abra o `index.html` no navegador.
 - Deploy no GitHub Pages
 
 ## Autor
-Diego Matos
+Diego Matos Melo
+
