@@ -25,8 +25,9 @@ export async function searchMovies(query) {
     popularity: Math.round(m.popularity || 0),
     desc: m.overview || "Sem descrição.",
     poster_path: m.poster_path
-  }));
+  });
 }
+
 
 
 
