@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CineTrack</title>
+  <title>CineTrack (Local)</title>
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
   <a class="skip-link" href="#main">Pular para o conteúdo</a>
 
@@ -14,7 +15,7 @@
       <div class="logo" aria-hidden="true">🎬</div>
       <div>
         <h1>CineTrack</h1>
-        <p>Watchlist, assistidos e notas — tudo no navegador.</p>
+        <p>Watchlist, assistidos e notas — tudo no navegador (banco local).</p>
       </div>
     </div>
 
@@ -24,19 +25,14 @@
     </div>
   </header>
 
-  <main class="container" id="main">
+  <main class="container" id="main" tabindex="-1">
     <section class="controls" aria-label="Controles">
       <div class="search">
         <label for="searchInput" class="sr-only">Buscar filme</label>
-        <input
-          id="searchInput"
-          type="search"
-          autocomplete="off"
-          placeholder="Buscar filme no TMDB (ex: Matrix, Titanic, Coringa)..."
-        />
+        <input id="searchInput" type="search" placeholder="Buscar no banco local (ex: Matrix, 1997, Drama)..." autocomplete="off" />
       </div>
 
-      <div class="filters" role="group" aria-label="Filtros">
+      <div class="filters" aria-label="Filtros">
         <button class="chip active" type="button" data-filter="all" aria-pressed="true">Todos</button>
         <button class="chip" type="button" data-filter="watchlist" aria-pressed="false">Quero ver</button>
         <button class="chip" type="button" data-filter="watched" aria-pressed="false">Assistidos</button>
@@ -54,21 +50,23 @@
       </div>
     </section>
 
-    <section class="stats" id="stats" aria-live="polite"></section>
-    <section class="grid" id="moviesGrid" aria-live="polite"></section>
+    <section class="stats" id="stats" aria-label="Estatísticas"></section>
+
+    <section class="grid" id="moviesGrid" aria-live="polite" aria-label="Lista de filmes"></section>
 
     <footer class="footer" id="github">
-      <div><b>Dica para GitHub:</b> tire 2 prints (home + um filme avaliado) e coloque no README.</div>
-      <div class="muted">CineTrack — HTML/CSS/JS + LocalStorage + TMDB</div>
+      <div><b>Dica:</b> tire 2 prints (home + filme avaliado) e coloque no README.</div>
+      <div class="muted">CineTrack — HTML/CSS/JS + LocalStorage + Banco Local</div>
     </footer>
   </main>
 
-  <dialog id="helpDialog" class="dialog" aria-label="Como usar">
+  <dialog id="helpDialog" class="dialog">
     <div class="dialog-inner">
       <h2>Como usar</h2>
       <ul>
-        <li>Pesquise e clique em <b>Quero ver</b> para montar sua lista.</li>
-        <li>Marque como <b>Assistido</b> e dê uma nota por estrelas.</li>
+        <li>Digite pelo menos <b>2 letras</b> para buscar no banco local.</li>
+        <li>Clique em <b>Quero ver</b> para salvar na watchlist.</li>
+        <li>Marque <b>Assistido</b> e dê uma nota por estrelas.</li>
         <li>Tudo fica salvo no seu navegador (LocalStorage).</li>
       </ul>
       <div class="dialog-actions">
