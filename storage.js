@@ -1,35 +1,29 @@
-const KEY = "cinetrack:v2";
+const KEY = "cinetrack_state_v2";
+
+const defaultState = {
+  theme: "dark",
+  watchlist: {},
+  watched: {},
+  ratings: {},
+};
 
 export function loadState() {
   try {
     const raw = localStorage.getItem(KEY);
-    if (!raw) return defaultState();
-    const parsed = JSON.parse(raw);
-    return normalize(parsed);
+    if (!raw) return structuredClone(defaultState);
+    const data = JSON.parse(raw);
+    return {
+      ...structuredClone(defaultState),
+      ...data,
+      watchlist: data.watchlist || {},
+      watched: data.watched || {},
+      ratings: data.ratings || {},
+    };
   } catch {
-    return defaultState();
+    return structuredClone(defaultState);
   }
 }
 
 export function saveState(state) {
   localStorage.setItem(KEY, JSON.stringify(state));
-}
-
-export function defaultState() {
-  return {
-    watchlist: {}, // id -> true
-    watched: {},   // id -> true
-    ratings: {},   // id -> 1..5
-    theme: "dark",
-  };
-}
-
-function normalize(s) {
-  const base = defaultState();
-  return {
-    watchlist: s.watchlist && typeof s.watchlist === "object" ? s.watchlist : base.watchlist,
-    watched: s.watched && typeof s.watched === "object" ? s.watched : base.watched,
-    ratings: s.ratings && typeof s.ratings === "object" ? s.ratings : base.ratings,
-    theme: s.theme === "light" ? "light" : "dark",
-  };
 }
