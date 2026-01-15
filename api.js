@@ -9,28 +9,25 @@ export function posterUrl(path) {
 }
 
 export async function searchMovies(query) {
-  if (!TMDB_API_KEY || TMDB_API_KEY.includes("SUA_CHAVE_AQUI")) {
-    throw new Error("TMDB_API_KEY não configurada em api.js");
-  }
-}
-
-  const url =
-    `${TMDB_BASE}/search/movie?api_key=${encodeURIComponent(TMDB_API_KEY)}` +
-    `&language=pt-BR&include_adult=false&query=${encodeURIComponent(query)}`;
+  const url = `${TMDB_BASE}/search/movie?api_key=${TMDB_API_KEY}&language=pt-BR&query=${encodeURIComponent(query)}`;
 
   const res = await fetch(url);
-  if (!res.ok) throw new Error("Falha ao buscar no TMDB");
   const data = await res.json();
 
-  return (data.results || []).map((m) => ({
+  if (!res.ok) {
+    throw new Error(data.status_message || "Erro ao buscar no TMDB");
+  }
+
+  return (data.results || []).map(m => ({
     id: m.id,
-    title: m.title || m.original_title || "Sem título",
-    year: m.release_date ? Number(m.release_date.slice(0, 4)) : "—",
+    title: m.title,
+    year: m.release_date?.slice(0, 4) || "—",
     popularity: Math.round(m.popularity || 0),
-    desc: m.overview || "Sem descrição disponível.",
-    poster_path: m.poster_path || null,
+    desc: m.overview || "Sem descrição.",
+    poster_path: m.poster_path
   }));
 }
+
 
 
 
