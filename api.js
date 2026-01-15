@@ -9,8 +9,8 @@ export function posterUrl(path) {
 }
 
 export async function searchMovies(query) {
-  if (!TMDB_API_KEY || TMDB_API_KEY.includes("COLE_SUA")) {
-    throw new Error("TMDB_API_KEY não configurada em js/api.js");
+  if (!TMDB_API_KEY || TMDB_API_KEY.includes("25d17526608e4a19ce0749e2c09502fc")) {
+    throw new Error("TMDB_API_KEY não configurada em api.js");
   }
 
   const url =
@@ -30,4 +30,5 @@ export async function searchMovies(query) {
     poster_path: m.poster_path || null,
   }));
 }
+
 
