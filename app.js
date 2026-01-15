@@ -112,7 +112,6 @@ function wireUI() {
       render();
     });
   });
-}
 
 function applyTheme(theme) {
   document.documentElement.dataset.theme = theme;
@@ -404,6 +403,7 @@ function focusStar(movieId, star) {
   );
   if (btn) btn.focus();
 }
+
 
 
 
