@@ -257,20 +257,10 @@ function starsHTML(id, rating) {
     const checked = i === rating ? "true" : "false";
     html += `
       <button
-        type="button"
-        class="star ${filled}"
-        id="star-${id}-${i}"
-        role="radio"
-        aria-checked="${checked}"
-        aria-label="${i} de 5 estrelas"
-        tabindex="${i === 1 ? "0" : "-1"}"
-        data-movie="${id}"
-        data-star="${i}"
-      >★</button>
-    `;
-  }
-  html += `</div>`;
+      <button class="star" data-movie="123" data-star="4">★</button>
+      html += `</div>`;
   return html;
+}
 }
 
 function loadingHTML() {
@@ -368,6 +358,7 @@ function focusStar(movieId, star) {
   );
   if (btn) btn.focus();
 }
+
 
 
 
