@@ -24,10 +24,18 @@ wireUI();
 renderEmptyState();
 
 function wireUI() {
+  document.querySelectorAll(".chip").forEach((chip) => {
+  chip.setAttribute("role", "button");
+  chip.setAttribute("aria-pressed", chip.classList.contains("active") ? "true" : "false");
+);
+  });
+
   ui.howToBtn.addEventListener("click", (e) => {
     e.preventDefault();
     ui.helpDialog.showModal();
   });
+}
+  
   ui.closeHelp.addEventListener("click", () => ui.helpDialog.close());
 
   ui.themeBtn.addEventListener("click", () => {
@@ -296,3 +304,4 @@ function escapeHtml(str) {
     .replaceAll('"',"&quot;")
     .replaceAll("'","&#039;");
 }
+
