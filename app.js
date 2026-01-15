@@ -1,5 +1,5 @@
 import { loadState, saveState } from "./storage.js";
-import { searchMovies, posterUrl } from "./api.js";
+import { MOVIES_DB } from "./data.js";
 
 const el = (id) => document.getElementById(id);
 
@@ -26,6 +26,15 @@ renderEmptyState();
 ui.grid.addEventListener("click", onGridClick);
 ui.grid.addEventListener("keydown", onGridKeyDown);
 
+function searchLocal(query) {
+  const q = query.toLowerCase();
+  return MOVIES_DB.filter(m =>
+    m.title.toLowerCase().includes(q) ||
+    String(m.year).includes(q) ||
+    (m.genres || []).join(" ").toLowerCase().includes(q)
+  );
+}
+
 function wireUI() {
   ui.howToBtn.addEventListener("click", () => ui.helpDialog.showModal());
   ui.closeHelp.addEventListener("click", () => ui.helpDialog.close());
@@ -48,7 +57,7 @@ function wireUI() {
         renderEmptyState();
         return;
       }
-      await loadFromTMDB(query);
+     loadFromLocal(query);
     }, 350);
   });
 
@@ -105,17 +114,9 @@ function setRating(id, rating) {
   render();
 }
 
-async function loadFromTMDB(q) {
-  ui.grid.innerHTML = loadingHTML();
-  ui.stats.innerHTML = "";
-
-  try {
-    currentList = await searchMovies(q);
-    render();
-  } catch (err) {
-    currentList = [];
-    ui.grid.innerHTML = errorHTML(err?.message || "Erro ao buscar");
-  }
+function loadFromLocal(q) {
+  currentList = searchLocal(q);
+  render();
 }
 
 function filteredMovies() {
@@ -361,3 +362,4 @@ function focusStar(movieId, star) {
   const btn = document.querySelector(`.star[data-movie="${movieId}"][data-star="${star}"]`);
   if (btn) btn.focus();
 }
+
