@@ -276,3 +276,39 @@ body{
 .dialog-inner h2{ margin:0 0 8px; }
 .dialog-inner ul{ margin:0 0 10px 18px; color: var(--muted); }
 .dialog-actions{ display:flex; justify-content:flex-end; }
+
+/* A11y: label invisível mas acessível */
+.sr-only{
+  position:absolute;
+  width:1px; height:1px;
+  padding:0; margin:-1px;
+  overflow:hidden;
+  clip:rect(0,0,0,0);
+  white-space:nowrap;
+  border:0;
+}
+
+/* A11y: foco bem visível no teclado */
+:focus-visible{
+  outline: 3px solid rgba(43,116,255,.65);
+  outline-offset: 3px;
+}
+
+/* Skip link (aparece só quando foca) */
+.skip-link{
+  position:absolute;
+  left: 10px;
+  top: -60px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  z-index: 9999;
+  transition: top .15s ease;
+}
+.skip-link:focus{
+  top: 10px;
+}
+
+
