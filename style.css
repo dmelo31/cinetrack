@@ -6,8 +6,6 @@
   --muted: rgba(232,238,247,.7);
   --border: rgba(255,255,255,.12);
   --blue: #2b74ff;
-  --red: #ff4d4d;
-  --green: #28d17c;
   --shadow: 0 12px 30px rgba(0,0,0,.35);
 }
 
@@ -161,8 +159,9 @@ body{
   display:flex;
   flex-direction:column;
 }
+
 .poster{
-  height: 140px;
+  height: 180px;
   background:
     radial-gradient(circle at 25% 15%, rgba(43,116,255,.35), transparent 60%),
     radial-gradient(circle at 90% 70%, rgba(40,209,124,.25), transparent 55%),
@@ -170,6 +169,7 @@ body{
   border-bottom:1px solid rgba(255,255,255,.08);
   position:relative;
 }
+
 .badges{
   position:absolute;
   left:10px; top:10px;
@@ -179,7 +179,7 @@ body{
   font-size: 12px;
   padding: 6px 8px;
   border-radius: 999px;
-  background: rgba(0,0,0,.35);
+  background: rgba(0,0,0,.45);
   border: 1px solid rgba(255,255,255,.14);
   backdrop-filter: blur(6px);
 }
