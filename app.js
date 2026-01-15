@@ -24,11 +24,14 @@ wireUI();
 renderEmptyState();
 
 function wireUI() {
-  document.querySelectorAll(".chip").forEach((chip) => {
-  chip.setAttribute("role", "button");
-  chip.setAttribute("aria-pressed", chip.classList.contains("active") ? "true" : "false");
-);
-  });
+document.querySelectorAll(".chip").forEach(c => {
+  c.classList.remove("active");
+  c.setAttribute("aria-pressed", "false");
+});
+chip.classList.add("active");
+chip.setAttribute("aria-pressed", "true");
+filter = chip.dataset.filter;
+render();
 
   ui.howToBtn.addEventListener("click", (e) => {
     e.preventDefault();
@@ -264,11 +267,25 @@ function cardHTML(movie) {
 }
 
 function starsHTML(id, rating) {
-  let html = "";
+  let html = `<div class="stars" role="radiogroup" aria-label="Avaliar filme de 1 a 5">`;
   for (let i = 1; i <= 5; i++) {
     const filled = i <= rating ? "filled" : "";
-    html += `<span class="star ${filled}" id="star-${id}-${i}" title="${i} estrela(s)">★</span>`;
+    const checked = i === rating ? "true" : "false";
+    html += `
+      <button
+        type="button"
+        class="star ${filled}"
+        id="star-${id}-${i}"
+        role="radio"
+        aria-checked="${checked}"
+        aria-label="${i} de 5 estrelas"
+        tabindex="${i === 1 ? "0" : "-1"}"
+        data-movie="${id}"
+        data-star="${i}"
+      >★</button>
+    `;
   }
+  html += `</div>`;
   return html;
 }
 
@@ -304,4 +321,5 @@ function escapeHtml(str) {
     .replaceAll('"',"&quot;")
     .replaceAll("'","&#039;");
 }
+
 
