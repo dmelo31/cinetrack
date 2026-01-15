@@ -8,6 +8,7 @@
 </head>
 <body>
   <a class="skip-link" href="#main">Pular para o conteúdo</a>
+
   <header class="header">
     <div class="brand">
       <div class="logo">🎬</div>
@@ -23,14 +24,16 @@
     </div>
   </header>
 
-  <main class="container">
+  <main class="container" id="main">
     <section class="controls">
       <div class="search">
-  <label for="searchInput" class="sr-only">Buscar filme</label>
-  <input id="searchInput" type="search" placeholder="Buscar filme no TMDB (ex: Matrix, Titanic, Coringa)..." />
-  </section>
- </main>
-</div>
+        <label for="searchInput" class="sr-only">Buscar filme</label>
+        <input
+          id="searchInput"
+          type="search"
+          placeholder="Buscar filme no TMDB (ex: Matrix, Titanic, Coringa)..."
+        />
+      </div>
 
       <div class="filters">
         <button class="chip active" data-filter="all">Todos</button>
@@ -79,8 +82,3 @@
   <script type="module" src="app.js"></script>
 </body>
 </html>
-
-
-
-
-
