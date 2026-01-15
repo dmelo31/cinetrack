@@ -12,6 +12,7 @@ export async function searchMovies(query) {
   if (!TMDB_API_KEY || TMDB_API_KEY.includes("SUA_CHAVE_AQUI")) {
     throw new Error("TMDB_API_KEY não configurada em api.js");
   }
+}
 
   const url =
     `${TMDB_BASE}/search/movie?api_key=${encodeURIComponent(TMDB_API_KEY)}` +
@@ -30,6 +31,7 @@ export async function searchMovies(query) {
     poster_path: m.poster_path || null,
   }));
 }
+
 
 
 
