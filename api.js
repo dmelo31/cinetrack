@@ -1,7 +1,7 @@
 const TMDB_BASE = "https://api.themoviedb.org/3";
 const IMG_BASE = "https://image.tmdb.org/t/p/w342";
 
-export const TMDB_API_KEY = "COLE_SUA_API_KEY_AQUI";
+export const TMDB_API_KEY = "25d17526608e4a19ce0749e2c09502fc";
 
 export function posterUrl(path) {
   if (!path) return null;
@@ -30,3 +30,4 @@ export async function searchMovies(query) {
     poster_path: m.poster_path || null,
   }));
 }
+
