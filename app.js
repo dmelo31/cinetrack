@@ -27,20 +27,58 @@ ui.grid.addEventListener("click", onGridClick);
 ui.grid.addEventListener("keydown", onGridKeyDown);
 
 function wireUI() {
-document.querySelectorAll(".chip").forEach(c => {
-  c.classList.remove("active");
-  c.setAttribute("aria-pressed", "false");
-});
-chip.classList.add("active");
-chip.setAttribute("aria-pressed", "true");
-filter = chip.dataset.filter;
-render();
+  // deixa os chips acessíveis e marca o ativo
+  document.querySelectorAll(".chip").forEach((chip) => {
+    chip.setAttribute("role", "button");
+    chip.setAttribute(
+      "aria-pressed",
+      chip.classList.contains("active") ? "true" : "false"
+    );
+
+    chip.addEventListener("click", () => {
+      document.querySelectorAll(".chip").forEach((c) => {
+        c.classList.remove("active");
+        c.setAttribute("aria-pressed", "false");
+      });
+
+      chip.classList.add("active");
+      chip.setAttribute("aria-pressed", "true");
+
+      filter = chip.dataset.filter;
+      render();
+    });
+  });
 
   ui.howToBtn.addEventListener("click", (e) => {
     e.preventDefault();
     ui.helpDialog.showModal();
   });
+
+  ui.closeHelp.addEventListener("click", () => ui.helpDialog.close());
+
+  ui.themeBtn.addEventListener("click", () => {
+    state.theme = state.theme === "dark" ? "light" : "dark";
+    saveState(state);
+    applyTheme(state.theme);
+  });
+
+  let t = null;
+  ui.search.addEventListener("input", (e) => {
+    query = e.target.value.trim();
+    clearTimeout(t);
+    t = setTimeout(async () => {
+      if (query.length < 2) {
+        currentList = [];
+        renderEmptyState();
+        return;
+      }
+      await loadFromTMDB(query);
+    }, 350);
+  });
+
+  ui.sort.addEventListener("change", () => render());
 }
+
   
   ui.closeHelp.addEventListener("click", () => ui.helpDialog.close());
 
@@ -187,18 +225,15 @@ function render() {
 
   renderStats();
 
-  const list = filteredMovies();
+  const list = filteredMovies(); // depois você pode: .slice(0, 24)
   if (list.length === 0) {
-    ui.grid.innerHTML = `<div class="card"><div class="content"><h2>Nada encontrado</h2><div class="desc">Tente outro termo ou mude o filtro.</div></div></div>`;
+    ui.grid.innerHTML =
+      `<div class="card"><div class="content"><h2>Nada encontrado</h2>` +
+      `<div class="desc">Tente outro termo ou mude o filtro.</div></div></div>`;
     return;
   }
 
-  ui.grid.innerHTML = list.map(m => cardHTML(m)).join("");
-
-    for (let r = 1; r <= 5; r++) {
-      el(`star-${id}-${r}`).addEventListener("click", () => setRating(id, r));
-    }
-  });
+  ui.grid.innerHTML = list.map((m) => cardHTML(m)).join("");
 }
 
 function cardHTML(movie) {
@@ -252,15 +287,26 @@ function cardHTML(movie) {
 
 function starsHTML(id, rating) {
   let html = `<div class="stars" role="radiogroup" aria-label="Avaliar filme de 1 a 5">`;
+
   for (let i = 1; i <= 5; i++) {
     const filled = i <= rating ? "filled" : "";
     const checked = i === rating ? "true" : "false";
+
     html += `
       <button
-      <button class="star" data-movie="123" data-star="4">★</button>
-      html += `</div>`;
+        type="button"
+        class="star ${filled}"
+        role="radio"
+        aria-checked="${checked}"
+        aria-label="${i} de 5 estrelas"
+        data-movie="${id}"
+        data-star="${i}"
+      >★</button>
+    `;
+  }
+
+  html += `</div>`;
   return html;
-}
 }
 
 function loadingHTML() {
@@ -358,6 +404,7 @@ function focusStar(movieId, star) {
   );
   if (btn) btn.focus();
 }
+
 
 
 
