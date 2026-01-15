@@ -1,3 +1,4 @@
+movie.poster
 import { loadState, saveState } from "./storage.js";
 import { MOVIES_DB } from "./data.js";
 
@@ -211,9 +212,9 @@ function cardHTML(movie) {
   ].join("");
 
   const poster = posterUrl(movie.poster_path);
-  const posterStyle = poster
-    ? `background-image:url('${poster}'); background-size:cover; background-position:center;`
-    : "";
+  const posterStyle = movie.poster
+  ? `background-image:url('${movie.poster}'); background-size:cover; background-position:center;`
+  : "";
 
   return `
   <article class="card">
@@ -362,4 +363,5 @@ function focusStar(movieId, star) {
   const btn = document.querySelector(`.star[data-movie="${movieId}"][data-star="${star}"]`);
   if (btn) btn.focus();
 }
+
 
