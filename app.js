@@ -1,5 +1,5 @@
-import { MOVIES } from "./data.js";
 import { loadState, saveState } from "./storage.js";
+import { searchMovies, posterUrl } from "./api.js";
 
 const el = (id) => document.getElementById(id);
 
@@ -17,10 +17,11 @@ const ui = {
 let state = loadState();
 let filter = "all";
 let query = "";
+let currentList = []; // resultados atuais (TMDB)
 
 applyTheme(state.theme);
 wireUI();
-render();
+renderEmptyState();
 
 function wireUI() {
   // Help dialog
@@ -37,10 +38,19 @@ function wireUI() {
     applyTheme(state.theme);
   });
 
-  // Search
+  // Search com debounce
+  let t = null;
   ui.search.addEventListener("input", (e) => {
-    query = e.target.value.trim().toLowerCase();
-    render();
+    query = e.target.value.trim();
+    clearTimeout(t);
+    t = setTimeout(async () => {
+      if (query.length < 2) {
+        currentList = [];
+        renderEmptyState();
+        return;
+      }
+      await loadFromTMDB(query);
+    }, 350);
   });
 
   // Sort
@@ -91,17 +101,22 @@ function setRating(id, rating) {
   render();
 }
 
+async function loadFromTMDB(q) {
+  ui.grid.innerHTML = loadingHTML();
+  try {
+    currentList = await searchMovies(q);
+    render();
+  } catch (err) {
+    currentList = [];
+    ui.stats.innerHTML = "";
+    ui.grid.innerHTML = errorHTML(err?.message || "Erro ao buscar");
+  }
+}
+
 function filteredMovies() {
-  const q = query;
+  let list = [...currentList];
 
-  let list = MOVIES.filter(m => {
-    if (!q) return true;
-    return (
-      m.title.toLowerCase().includes(q) ||
-      String(m.year).includes(q)
-    );
-  });
-
+  // filtro por status (watchlist/watched/rated)
   list = list.filter(m => {
     const s = getMovieStatus(m.id);
     if (filter === "watchlist") return s.inWatchlist;
@@ -111,47 +126,70 @@ function filteredMovies() {
   });
 
   const sort = ui.sort.value;
-  list.sort((a,b) => {
+  list.sort((a, b) => {
     const sa = getMovieStatus(a.id);
     const sb = getMovieStatus(b.id);
 
     if (sort === "title") return a.title.localeCompare(b.title);
-    if (sort === "rating_desc") return (sb.rating - sa.rating) || (b.popularity - a.popularity);
-    if (sort === "rating_asc") return (sa.rating - sb.rating) || (b.popularity - a.popularity);
+    if (sort === "rating_desc") return (sb.rating - sa.rating) || ((b.popularity || 0) - (a.popularity || 0));
+    if (sort === "rating_asc") return (sa.rating - sb.rating) || ((b.popularity || 0) - (a.popularity || 0));
 
-    // default popular
-    return b.popularity - a.popularity;
+    // popular default
+    return (b.popularity || 0) - (a.popularity || 0);
   });
 
   return list;
 }
 
 function renderStats() {
-  const total = MOVIES.length;
   const watchlistCount = Object.keys(state.watchlist).length;
   const watchedCount = Object.keys(state.watched).length;
   const ratedCount = Object.keys(state.ratings).length;
 
   ui.stats.innerHTML = `
-    <div class="stat"><b>${total}</b><span>Filmes no catálogo</span></div>
     <div class="stat"><b>${watchlistCount}</b><span>Quero ver</span></div>
     <div class="stat"><b>${watchedCount}</b><span>Assistidos</span></div>
     <div class="stat"><b>${ratedCount}</b><span>Avaliados</span></div>
+    <div class="stat"><b>${currentList.length}</b><span>Resultados (TMDB)</span></div>
+  `;
+}
+
+function renderEmptyState() {
+  ui.stats.innerHTML = `
+    <div class="stat"><b>🔎</b><span>Digite pelo menos 2 letras para buscar no TMDB</span></div>
+    <div class="stat"><b>${Object.keys(state.watchlist).length}</b><span>Quero ver (salvos)</span></div>
+    <div class="stat"><b>${Object.keys(state.watched).length}</b><span>Assistidos (salvos)</span></div>
+  `;
+  ui.grid.innerHTML = `
+    <div class="card">
+      <div class="content">
+        <h2>Busque filmes reais</h2>
+        <div class="desc">
+          Digite no campo de busca para carregar filmes do TMDB com pôster e descrição.
+          Seus status (quero ver/assistido/nota) continuam salvos no LocalStorage.
+        </div>
+      </div>
+    </div>
   `;
 }
 
 function render() {
+  if (!query || query.trim().length < 2) {
+    renderEmptyState();
+    return;
+  }
+
   renderStats();
 
   const list = filteredMovies();
   if (list.length === 0) {
-    ui.grid.innerHTML = `<div class="card"><div class="content"><h2>Nada encontrado</h2><div class="desc">Tente outro termo de busca ou mude o filtro.</div></div></div>`;
+    ui.grid.innerHTML = `<div class="card"><div class="content"><h2>Nada encontrado</h2><div class="desc">Tente outro termo ou mude o filtro.</div></div></div>`;
     return;
   }
 
   ui.grid.innerHTML = list.map(m => cardHTML(m)).join("");
 
-  // bind events after render
+  // bind events
   list.forEach(m => {
     const id = m.id;
 
@@ -171,8 +209,7 @@ function render() {
       setRating(id, 0);
     });
 
-    // stars
-    for (let r=1; r<=5; r++) {
+    for (let r = 1; r <= 5; r++) {
       el(`star-${id}-${r}`).addEventListener("click", () => setRating(id, r));
     }
   });
@@ -186,9 +223,11 @@ function cardHTML(movie) {
     s.rating > 0 ? `<span class="badge">⭐ ${s.rating}/5</span>` : "",
   ].join("");
 
+  const poster = posterUrl(movie.poster_path);
+
   return `
   <article class="card">
-    <div class="poster">
+    <div class="poster" style="${poster ? `background-image:url('${poster}'); background-size:cover; background-position:center;` : ""}">
       <div class="badges">${badges}</div>
     </div>
 
@@ -196,7 +235,7 @@ function cardHTML(movie) {
       <div class="title">
         <div>
           <h2>${escapeHtml(movie.title)}</h2>
-          <div class="meta">${movie.year} • Popularidade: ${movie.popularity}</div>
+          <div class="meta">${escapeHtml(movie.year)} • Popularidade: ${escapeHtml(movie.popularity)}</div>
         </div>
       </div>
 
@@ -224,11 +263,35 @@ function cardHTML(movie) {
 
 function starsHTML(id, rating) {
   let html = "";
-  for (let i=1; i<=5; i++) {
+  for (let i = 1; i <= 5; i++) {
     const filled = i <= rating ? "filled" : "";
     html += `<span class="star ${filled}" id="star-${id}-${i}" title="${i} estrela(s)">★</span>`;
   }
   return html;
+}
+
+function loadingHTML() {
+  return `
+    <div class="card">
+      <div class="content">
+        <h2>Carregando…</h2>
+        <div class="desc">Buscando filmes no TMDB.</div>
+      </div>
+    </div>
+  `;
+}
+
+function errorHTML(msg) {
+  return `
+    <div class="card">
+      <div class="content">
+        <h2>Não foi possível buscar</h2>
+        <div class="desc">${escapeHtml(msg)}<br/><br/>
+        Verifique se você colocou sua TMDB_API_KEY em <b>js/api.js</b>.
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 function escapeHtml(str) {
