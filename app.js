@@ -17,28 +17,25 @@ const ui = {
 let state = loadState();
 let filter = "all";
 let query = "";
-let currentList = []; // resultados atuais (TMDB)
+let currentList = [];
 
 applyTheme(state.theme);
 wireUI();
 renderEmptyState();
 
 function wireUI() {
-  // Help dialog
   ui.howToBtn.addEventListener("click", (e) => {
     e.preventDefault();
     ui.helpDialog.showModal();
   });
   ui.closeHelp.addEventListener("click", () => ui.helpDialog.close());
 
-  // Theme
   ui.themeBtn.addEventListener("click", () => {
     state.theme = state.theme === "dark" ? "light" : "dark";
     saveState(state);
     applyTheme(state.theme);
   });
 
-  // Search com debounce
   let t = null;
   ui.search.addEventListener("input", (e) => {
     query = e.target.value.trim();
@@ -53,10 +50,8 @@ function wireUI() {
     }, 350);
   });
 
-  // Sort
   ui.sort.addEventListener("change", () => render());
 
-  // Filter chips
   document.querySelectorAll(".chip").forEach((chip) => {
     chip.addEventListener("click", () => {
       document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
@@ -116,7 +111,6 @@ async function loadFromTMDB(q) {
 function filteredMovies() {
   let list = [...currentList];
 
-  // filtro por status (watchlist/watched/rated)
   list = list.filter(m => {
     const s = getMovieStatus(m.id);
     if (filter === "watchlist") return s.inWatchlist;
@@ -133,8 +127,6 @@ function filteredMovies() {
     if (sort === "title") return a.title.localeCompare(b.title);
     if (sort === "rating_desc") return (sb.rating - sa.rating) || ((b.popularity || 0) - (a.popularity || 0));
     if (sort === "rating_asc") return (sa.rating - sb.rating) || ((b.popularity || 0) - (a.popularity || 0));
-
-    // popular default
     return (b.popularity || 0) - (a.popularity || 0);
   });
 
@@ -156,7 +148,7 @@ function renderStats() {
 
 function renderEmptyState() {
   ui.stats.innerHTML = `
-    <div class="stat"><b>🔎</b><span>Digite pelo menos 2 letras para buscar no TMDB</span></div>
+    <div class="stat"><b>🔎</b><span>Digite pelo menos 2 letras para buscar</span></div>
     <div class="stat"><b>${Object.keys(state.watchlist).length}</b><span>Quero ver (salvos)</span></div>
     <div class="stat"><b>${Object.keys(state.watched).length}</b><span>Assistidos (salvos)</span></div>
   `;
@@ -189,7 +181,6 @@ function render() {
 
   ui.grid.innerHTML = list.map(m => cardHTML(m)).join("");
 
-  // bind events
   list.forEach(m => {
     const id = m.id;
 
@@ -224,10 +215,13 @@ function cardHTML(movie) {
   ].join("");
 
   const poster = posterUrl(movie.poster_path);
+  const posterStyle = poster
+    ? `background-image:url('${poster}'); background-size:cover; background-position:center;`
+    : "";
 
   return `
   <article class="card">
-    <div class="poster" style="${poster ? `background-image:url('${poster}'); background-size:cover; background-position:center;` : ""}">
+    <div class="poster" style="${posterStyle}">
       <div class="badges">${badges}</div>
     </div>
 
