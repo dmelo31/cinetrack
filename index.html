@@ -11,7 +11,7 @@
 
   <header class="header">
     <div class="brand">
-      <div class="logo">🎬</div>
+      <div class="logo" aria-hidden="true">🎬</div>
       <div>
         <h1>CineTrack</h1>
         <p>Watchlist, assistidos e notas — tudo no navegador.</p>
@@ -19,27 +19,28 @@
     </div>
 
     <div class="header-actions">
-      <button id="themeBtn" class="btn secondary" aria-label="Alternar tema">🌙 Tema</button>
-      <a class="btn secondary" href="#github" id="howToBtn">📌 Como usar</a>
+      <button id="themeBtn" class="btn secondary" type="button" aria-label="Alternar tema">🌙 Tema</button>
+      <button class="btn secondary" type="button" id="howToBtn">📌 Como usar</button>
     </div>
   </header>
 
   <main class="container" id="main">
-    <section class="controls">
+    <section class="controls" aria-label="Controles">
       <div class="search">
         <label for="searchInput" class="sr-only">Buscar filme</label>
         <input
           id="searchInput"
           type="search"
+          autocomplete="off"
           placeholder="Buscar filme no TMDB (ex: Matrix, Titanic, Coringa)..."
         />
       </div>
 
-      <div class="filters">
-        <button class="chip active" data-filter="all">Todos</button>
-        <button class="chip" data-filter="watchlist">Quero ver</button>
-        <button class="chip" data-filter="watched">Assistidos</button>
-        <button class="chip" data-filter="rated">Avaliados</button>
+      <div class="filters" role="group" aria-label="Filtros">
+        <button class="chip active" type="button" data-filter="all" aria-pressed="true">Todos</button>
+        <button class="chip" type="button" data-filter="watchlist" aria-pressed="false">Quero ver</button>
+        <button class="chip" type="button" data-filter="watched" aria-pressed="false">Assistidos</button>
+        <button class="chip" type="button" data-filter="rated" aria-pressed="false">Avaliados</button>
       </div>
 
       <div class="sort">
@@ -53,19 +54,16 @@
       </div>
     </section>
 
-    <section class="stats" id="stats"></section>
-
+    <section class="stats" id="stats" aria-live="polite"></section>
     <section class="grid" id="moviesGrid" aria-live="polite"></section>
 
     <footer class="footer" id="github">
-      <div>
-        <b>Dica para GitHub:</b> tire 2 prints (home + um filme avaliado) e coloque no README.
-      </div>
+      <div><b>Dica para GitHub:</b> tire 2 prints (home + um filme avaliado) e coloque no README.</div>
       <div class="muted">CineTrack — HTML/CSS/JS + LocalStorage + TMDB</div>
     </footer>
   </main>
 
-  <dialog id="helpDialog" class="dialog">
+  <dialog id="helpDialog" class="dialog" aria-label="Como usar">
     <div class="dialog-inner">
       <h2>Como usar</h2>
       <ul>
@@ -74,7 +72,7 @@
         <li>Tudo fica salvo no seu navegador (LocalStorage).</li>
       </ul>
       <div class="dialog-actions">
-        <button class="btn secondary" id="closeHelp">Fechar</button>
+        <button class="btn secondary" id="closeHelp" type="button">Fechar</button>
       </div>
     </div>
   </dialog>
