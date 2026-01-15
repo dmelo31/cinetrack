@@ -23,6 +23,9 @@ applyTheme(state.theme);
 wireUI();
 renderEmptyState();
 
+ui.grid.addEventListener("click", onGridClick);
+ui.grid.addEventListener("keydown", onGridKeyDown);
+
 function wireUI() {
 document.querySelectorAll(".chip").forEach(c => {
   c.classList.remove("active");
@@ -192,25 +195,6 @@ function render() {
 
   ui.grid.innerHTML = list.map(m => cardHTML(m)).join("");
 
-  list.forEach(m => {
-    const id = m.id;
-
-    el(`wl-${id}`).addEventListener("click", () => {
-      const s = getMovieStatus(id);
-      setWatchlist(id, !s.inWatchlist);
-    });
-
-    el(`watched-${id}`).addEventListener("click", () => {
-      const s = getMovieStatus(id);
-      setWatched(id, !s.watched);
-    });
-
-    el(`clear-${id}`).addEventListener("click", () => {
-      setWatchlist(id, false);
-      setWatched(id, false);
-      setRating(id, 0);
-    });
-
     for (let r = 1; r <= 5; r++) {
       el(`star-${id}-${r}`).addEventListener("click", () => setRating(id, r));
     }
@@ -321,5 +305,69 @@ function escapeHtml(str) {
     .replaceAll('"',"&quot;")
     .replaceAll("'","&#039;");
 }
+
+function onGridClick(e) {
+  const t = e.target;
+
+  // botões principais
+  if (t.id?.startsWith("wl-")) {
+    const id = Number(t.id.replace("wl-", ""));
+    const s = getMovieStatus(id);
+    setWatchlist(id, !s.inWatchlist);
+    return;
+  }
+
+  if (t.id?.startsWith("watched-")) {
+    const id = Number(t.id.replace("watched-", ""));
+    const s = getMovieStatus(id);
+    setWatched(id, !s.watched);
+    return;
+  }
+
+  if (t.id?.startsWith("clear-")) {
+    const id = Number(t.id.replace("clear-", ""));
+    setWatchlist(id, false);
+    setWatched(id, false);
+    setRating(id, 0);
+    return;
+  }
+
+  // estrelas (se você trocou pra botão com data-movie/data-star)
+  if (t.classList?.contains("star") && t.dataset.movie) {
+    const id = Number(t.dataset.movie);
+    const star = Number(t.dataset.star);
+    setRating(id, star);
+    return;
+  }
+}
+
+function onGridKeyDown(e) {
+  const t = e.target;
+  if (!(t.classList?.contains("star") && t.dataset.movie)) return;
+
+  const movieId = Number(t.dataset.movie);
+  let star = Number(t.dataset.star);
+
+  if (e.key === "ArrowRight" || e.key === "ArrowUp") {
+    e.preventDefault();
+    star = Math.min(5, star + 1);
+    focusStar(movieId, star);
+  } else if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
+    e.preventDefault();
+    star = Math.max(1, star - 1);
+    focusStar(movieId, star);
+  } else if (e.key === "Enter" || e.key === " ") {
+    e.preventDefault();
+    setRating(movieId, star);
+  }
+}
+
+function focusStar(movieId, star) {
+  const btn = document.querySelector(
+    `.star[data-movie="${movieId}"][data-star="${star}"]`
+  );
+  if (btn) btn.focus();
+}
+
 
 
