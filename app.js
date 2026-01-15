@@ -1,4 +1,3 @@
-movie.poster
 import { loadState, saveState } from "./storage.js";
 import { MOVIES_DB } from "./data.js";
 
@@ -29,47 +28,49 @@ applyTheme(state.theme);
 wireUI();
 renderEmptyState();
 
-ui.grid.addEventListener("click", onGridClick);
-ui.grid.addEventListener("keydown", onGridKeyDown);
+ui.grid?.addEventListener("click", onGridClick);
+ui.grid?.addEventListener("keydown", onGridKeyDown);
 
-function searchLocal(query) {
-  const q = query.toLowerCase();
-  return MOVIES_DB.filter(m =>
-    m.title.toLowerCase().includes(q) ||
-    String(m.year).includes(q) ||
-    (m.genres || []).join(" ").toLowerCase().includes(q)
-  );
+function searchLocal(text) {
+  const q = text.toLowerCase();
+  return MOVIES_DB.filter((m) => {
+    const title = (m.title || "").toLowerCase();
+    const year = String(m.year || "");
+    const genres = (m.genres || []).join(" ").toLowerCase();
+    return title.includes(q) || year.includes(q) || genres.includes(q);
+  });
 }
 
 function wireUI() {
-  ui.howToBtn.addEventListener("click", () => ui.helpDialog.showModal());
-  ui.closeHelp.addEventListener("click", () => ui.helpDialog.close());
+  ui.howToBtn?.addEventListener("click", (e) => {
+    e.preventDefault?.();
+    ui.helpDialog?.showModal?.();
+  });
+  ui.closeHelp?.addEventListener("click", () => ui.helpDialog?.close?.());
 
-  ui.themeBtn.addEventListener("click", () => {
+  ui.themeBtn?.addEventListener("click", () => {
     state.theme = state.theme === "dark" ? "light" : "dark";
     saveState(state);
     applyTheme(state.theme);
   });
 
-  // debounce simples
   let t = null;
-  ui.search.addEventListener("input", (e) => {
+  ui.search?.addEventListener("input", (e) => {
     query = e.target.value.trim();
     clearTimeout(t);
 
-    t = setTimeout(async () => {
+    t = setTimeout(() => {
       if (query.length < 2) {
         currentList = [];
         renderEmptyState();
         return;
       }
-     loadFromLocal(query);
-    }, 350);
+      loadFromLocal(query);
+    }, 250);
   });
 
-  ui.sort.addEventListener("change", render);
+  ui.sort?.addEventListener("change", () => render());
 
-  // filtros
   document.querySelectorAll(".chip").forEach((chip) => {
     chip.addEventListener("click", () => {
       document.querySelectorAll(".chip").forEach((c) => {
@@ -79,7 +80,7 @@ function wireUI() {
 
       chip.classList.add("active");
       chip.setAttribute("aria-pressed", "true");
-      filter = chip.dataset.filter;
+      filter = chip.dataset.filter || "all";
       render();
     });
   });
@@ -88,7 +89,7 @@ function wireUI() {
 function applyTheme(theme) {
   const t = theme === "light" ? "light" : "dark";
   document.documentElement.dataset.theme = t;
-  ui.themeBtn.textContent = t === "dark" ? "🌙 Tema" : "☀️ Tema";
+  if (ui.themeBtn) ui.themeBtn.textContent = t === "dark" ? "🌙 Tema" : "☀️ Tema";
 }
 
 function getMovieStatus(id) {
@@ -136,12 +137,12 @@ function filteredMovies() {
     return true;
   });
 
-  const sort = ui.sort.value;
+  const sort = ui.sort?.value || "popular";
   list.sort((a, b) => {
     const sa = getMovieStatus(a.id);
     const sb = getMovieStatus(b.id);
 
-    if (sort === "title") return a.title.localeCompare(b.title);
+    if (sort === "title") return (a.title || "").localeCompare(b.title || "");
     if (sort === "rating_desc") return (sb.rating - sa.rating) || ((b.popularity || 0) - (a.popularity || 0));
     if (sort === "rating_asc") return (sa.rating - sb.rating) || ((b.popularity || 0) - (a.popularity || 0));
     return (b.popularity || 0) - (a.popularity || 0);
@@ -159,25 +160,22 @@ function renderStats() {
     <div class="stat"><b>${watchlistCount}</b><span>Quero ver</span></div>
     <div class="stat"><b>${watchedCount}</b><span>Assistidos</span></div>
     <div class="stat"><b>${ratedCount}</b><span>Avaliados</span></div>
-    <div class="stat"><b>${currentList.length}</b><span>Resultados (TMDB)</span></div>
+    <div class="stat"><b>${currentList.length}</b><span>Resultados (Local)</span></div>
   `;
 }
 
 function renderEmptyState() {
   ui.stats.innerHTML = `
-    <div class="stat"><b>🔎</b><span>Digite pelo menos 2 letras para buscar</span></div>
-    <div class="stat"><b>${Object.keys(state.watchlist).length}</b><span>Quero ver (salvos)</span></div>
-    <div class="stat"><b>${Object.keys(state.watched).length}</b><span>Assistidos (salvos)</span></div>
+    <div class="stat"><b>🔎</b><span>Digite pelo menos 2 letras</span></div>
+    <div class="stat"><b>${Object.keys(state.watchlist).length}</b><span>Quero ver</span></div>
+    <div class="stat"><b>${Object.keys(state.watched).length}</b><span>Assistidos</span></div>
   `;
 
   ui.grid.innerHTML = `
     <div class="card">
       <div class="content">
-        <h2>Busque filmes reais</h2>
-        <div class="desc">
-          Digite no campo de busca para carregar filmes do Local.
-          Seus status (quero ver/assistido/nota) ficam salvos no LocalStorage.
-        </div>
+        <h2>Banco local ativo ✅</h2>
+        <div class="desc">Digite “matrix”, “1997” ou “drama” para testar.</div>
       </div>
     </div>
   `;
@@ -217,8 +215,8 @@ function cardHTML(movie) {
   ].join("");
 
   const posterStyle = movie.poster
-  ? `background-image:url('${movie.poster}'); background-size:cover; background-position:center;`
-  : "";
+    ? `background-image:url('${movie.poster}'); background-size:cover; background-position:center;`
+    : "";
 
   return `
   <article class="card">
@@ -230,11 +228,11 @@ function cardHTML(movie) {
       <div class="title">
         <div>
           <h2>${escapeHtml(movie.title)}</h2>
-          <div class="meta">${escapeHtml(movie.year)} • Popularidade: ${escapeHtml(movie.popularity)}</div>
+          <div class="meta">${escapeHtml(movie.year)} • Popularidade: ${escapeHtml(movie.popularity || 0)}</div>
         </div>
       </div>
 
-      <div class="desc">${escapeHtml(movie.desc)}</div>
+      <div class="desc">${escapeHtml(movie.desc || "")}</div>
 
       <div class="stars" role="radiogroup" aria-label="Avaliar filme de 1 a 5">
         ${starsHTML(movie.id, s.rating)}
@@ -274,31 +272,6 @@ function starsHTML(movieId, rating) {
     `;
   }
   return html;
-}
-
-function loadingHTML() {
-  return `
-    <div class="card">
-      <div class="content">
-        <h2>Carregando…</h2>
-        <div class="desc">Buscando filmes no Local.</div>
-      </div>
-    </div>
-  `;
-}
-
-function errorHTML(msg) {
-  return `
-    <div class="card">
-      <div class="content">
-        <h2>Não foi possível buscar</h2>
-        <div class="desc">
-          ${escapeHtml(msg)}<br/><br/>
-          <b>api.js</b>.
-        </div>
-      </div>
-    </div>
-  `;
 }
 
 function escapeHtml(str) {
@@ -367,8 +340,3 @@ function focusStar(movieId, star) {
   const btn = document.querySelector(`.star[data-movie="${movieId}"][data-star="${star}"]`);
   if (btn) btn.focus();
 }
-
-
-
-
-
